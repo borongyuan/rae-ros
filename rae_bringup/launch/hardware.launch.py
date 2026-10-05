@@ -13,7 +13,7 @@ def generate_launch_description():
             'launch',
             'control.launch.py'
         ]),
-        launch_arguments = {'enable_localization': False}.items(),
+        launch_arguments = {'enable_localization': 'false'}.items(),
     )
 
     battery_status_node = Node(
