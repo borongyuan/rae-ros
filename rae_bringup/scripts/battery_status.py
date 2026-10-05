@@ -5,8 +5,6 @@ import sys
 from rclpy.node import Node
 
 from sensor_msgs.msg import BatteryState, Image
-from std_msgs.msg import ColorRGBA
-from rae_msgs.msg import LEDControl
 from cv_bridge import CvBridge
 
 from PIL import Image as PILImage, ImageDraw
@@ -26,7 +24,6 @@ class BatteryStatusNode(Node):
         self.subscription  # prevent unused variable warning
 
         self.publisher_image = self.create_publisher(Image, 'lcd', 10)
-        self.publisher_led = self.create_publisher(LEDControl, 'leds', 10)
 
         self.bridge = CvBridge()
 
@@ -79,32 +76,6 @@ class BatteryStatusNode(Node):
         # Convert OpenCV image to ROS image and publish
         img_msg = self.bridge.cv2_to_imgmsg(img_cv, encoding="bgr8")
         self.publisher_image.publish(img_msg)
-
-        # Set LEDs based on battery level
-        # Define colors for LEDs
-        colors = {
-            "green": ColorRGBA(r=0.0, g=1.0, b=0.0, a=1.0),
-            "yellow": ColorRGBA(r=1.0, g=1.0, b=0.0, a=1.0),
-            "red": ColorRGBA(r=1.0, g=0.0, b=0.0, a=1.0),
-            "blue": ColorRGBA(r=0.0, g=0.0, b=1.0, a=1.0)
-        }
-
-        # Calculate how many LEDs should be turned on based on battery percentage
-        led_on_count = int(40 * (percent / 100))
-
-        # Create and publish LEDControl message for each LED
-        led_msg = LEDControl()
-        led_msg.header.stamp = self.get_clock().now().to_msg()
-        led_msg.data = [ColorRGBA(r=0.0, g=0.0, b=0.0, a=0.0)]*40
-        for i in range(39):
-            led_msg.single_led_n = 0
-            led_msg.control_type = 2  # assuming 0 means "set color"
-
-            # Turn on the LED if it is within the led_on_count, otherwise turn it off
-            if i < led_on_count:
-                led_msg.data[i]=(colors[color])
-
-        self.publisher_led.publish(led_msg)
 
 
 def signal_handler(node):
